@@ -9,12 +9,12 @@ function Signup(){
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [account, setAccount] = useState("");
+    // const [account, setAccount] = useState("");
     const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios.post('http://localhost:3001/signup',{account,name,email,password})
+        axios.post('http://localhost:3001/signup',{name,email,password})
         .then(result => {console.log(result)
             navigate('/login')
         })
@@ -36,20 +36,20 @@ function Signup(){
             <div className="container mt-5" >
             <div className="row justify-content-center">
                 <div className="col-md-6">
-                    <div className="card shadow">
+                    <div className="card shadow-lg p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.8)" }}>
                         <div className="card-body">
                             <h1 className="text-center mb-4">Sign Up</h1>
                             <p className="text-center text-muted">Please fill in the form below to create an account.</p>
                             <hr/>
 
                             <form>
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                                     <label htmlFor="account" className="form-label"><b>Account</b></label>
                                     <input type="text" id="account"className="form-control" placeholder="Enter your Account e.g (ateeq786316)" name="account" required
                                     onChange={(e) => setAccount(e.target.value)}
                                     />
                                     
-                                </div>
+                                </div> */}
                             <div className="mb-3">
                                     <label htmlFor="name" className="form-label"><b>Name</b></label>
                                     <input type="text" id="name"className="form-control" placeholder="Enter your Name" name="name" required

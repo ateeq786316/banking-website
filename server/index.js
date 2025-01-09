@@ -26,10 +26,30 @@ app.listen(3001, () => {
 
 
 //singup request and response
-app.post("/signup", (req, res) => {
-      BankuserModel.create(req.body)
-      .then(bankuser => res.json(bankuser))
-      .catch(error => res.json({error: error.message}))
+//SIGNUP
+const crypto = require("crypto");
+
+app.post("/signup", async (req, res) => {
+  try {
+    const accountNumber = crypto.randomBytes(4).toString("hex"); // Generate unique account number
+    const userData = {
+      ...req.body,
+      account: accountNumber,
+      balance: 0,
+    };
+
+    // Check if email already exists
+    const existingUser = await BankuserModel.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+    // Save user data
+    const newUser = await BankuserModel.create(userData);
+    res.status(201).json({ message: "User registered successfully", user: newUser });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error registering user", error: err.message });
+  }
 });
 
 //login request and response
@@ -60,34 +80,49 @@ app.post("/deposit", async (req, res) => {
 
   try {
     // Validate request parameters
-    if (!account || !amount || isNaN(amount) || amount <= 0) {
-      return res.status(400).json({ message: "Invalid request" });
+    if (!account || !amount || isNaN(amount) || amount <= 0) 
+    {
+      return res.status(400).json({ message: "Invalid request" })
     }
-
+    // Log the account and amount before processing
+    console.log("Account:", account)
+    console.log("Amount:", amount)
     // Find user by account number
-    const user = await BankuserModel.findOne({ account: account });
-    
-    if (!user) {
-      return res.status(404).json({ message: "Account not found" });
+    const user = await BankuserModel.findOne({ account: account})
+
+    if (!user) 
+    {
+      return res.status(404).json({ message: "Account not found" })
     }
 
-    const parsedAmount = parseFloat(amount);
+    const parsedAmount = parseFloat(amount)
 
     // Update the balance by incrementing the current balance with the deposit amount
     const result = await BankuserModel.updateOne(
       { account: user.account }, // Use the correct account field here
-      { $inc: { balance: parsedAmount } }
-    );
+      { $inc: { balance: parsedAmount } },
+    )
+
+    // Fetch the updated user information
+    const updatedUser = await BankuserModel.findOne({ account: user.account });
 
     // Check if the balance was successfully updated
-    if (result.nModified === 0) {
-      res.json({ message: "Deposit successful", balance: user.balance + parsedAmount });
-    } 
-    else {
-      res.json({ message: "Deposit failed. No changes made to balance." });
-    }
-  } catch (error) {
-    console.log("Server error:");
+    if (result.nModified > 0) 
+      {
+      res.json({ 
+        message: "Deposit successful", 
+        balance: updatedUser.balance // Get updated balance from the database
+      })
+      }
+      else 
+      {
+        // there was error because i was using res.status that happen because it will show the message in console 
+        res.json(400).status({ message: "Deposit failed. No changes made to balance." });
+      }
+  } 
+  catch (error) {
+    console.log("Server error:", error);
+    // res.json(500).status({ message: "Internal server error" });
   }
 });
 
@@ -177,12 +212,13 @@ app.post("/transfer", async (req, res) => {
       { account: destinationAccount },
       { $inc: { balance: parsedAmount } }
     );
-
+    
     // Check if both updates were successful
     if (updateSource.nModified === 1 && updateDestination.nModified === 1) {
-      return res.json({ message: "Transfer successful." });
-    } else {
-      return res.status(500).json({ message: "Transfer failed. Please try again." });
+      return res.status({ message: "Transfer successful." });
+    } 
+    else {
+      // return res.status(500).json({ message: "Transfer failed. Please try again." });
     }
   } catch (error) {
     console.error("Server error:", error);
@@ -209,6 +245,57 @@ app.get("/balance/:account", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+//paybill request and response
+app.post("/paybill", async (req, res) => {
+  const { account, amount } = req.body;
+
+  try {
+    // Validate request parameters
+    if (!account || !amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Invalid request parameters." });
+    }
+
+    // Find the user account
+    const user = await BankuserModel.findOne({ account: account });
+
+    if (!user) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const parsedAmount = parseFloat(amount);
+
+    // Check if the user has enough balance
+    if (user.balance < parsedAmount) {
+      return res.status(400).json({ message: "Insufficient balance." });
+    }
+
+    // Deduct the balance
+    const result = await BankuserModel.updateOne(
+      { account: user.account },
+      { $inc: { balance: -parsedAmount } }
+    );
+
+    // Ensure the update was successful
+    if (result.nModified === 1) {
+      return res.json({
+        message: "Bill payment successful.",
+        balance: user.balance - parsedAmount,
+      });
+    } 
+    else {
+      console.error("Failed to deduct amount from account:", result);
+      return res.status(500).json({ message: "Amount deducted!! from account." });
+    }
+  } catch (error) {
+    console.error("Error during bill payment:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
+
 
 
 // Default Route

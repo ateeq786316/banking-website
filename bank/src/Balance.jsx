@@ -42,10 +42,7 @@ function Balance(){
     <div className="row justify-content-center">
       <div className="col-md-6 col-lg-4">
         {/* White background for the form area */}
-        <div
-          className="card shadow-lg p-4"
-          style={{ backgroundColor: "rgba(255, 255, 255, 0.8)" }}
-        >
+        <div className="card shadow-lg p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.8)" }}>
           <h1 className="text-center mt-4 mb-4" style={{ fontWeight: "bold" }}>
             Check Account Balance
           </h1>

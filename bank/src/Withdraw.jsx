@@ -35,7 +35,7 @@ function Withdraw(){
         <div className="container mt-5">
         <div className="row justify-content-center">
           <div className="col-md-6">
-            <div className="card shadow">
+            <div className="card shadow-lg p-4" style={{ backgroundColor: "rgba(255, 255, 255, 0.8)" }}>
               <div className="card-body">
                 <h1 className="text-center mb-4">Withdraw</h1>
                 <form onSubmit={handleSubmit}>

@@ -8,6 +8,7 @@ import Deposit from './Deposit'
 import Withdraw from './Withdraw'
 import Transfer from './Transfer'
 import Balance from './Balance'
+import PayBill from './PayBill'
 
 
 import {BrowserRouter,Routes, Route} from 'react-router-dom'
@@ -24,6 +25,7 @@ function App() {
           <Route path='/withdraw' element={<Withdraw/>}></Route>
           <Route path='/transfer' element={<Transfer/>}></Route>
           <Route path='/balance'  element={<Balance/>}></Route>
+          <Route path='/paybill'  element={<PayBill/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>
